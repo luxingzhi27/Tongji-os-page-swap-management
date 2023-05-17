@@ -361,7 +361,7 @@ func UI() {
 	missingPagesPercentageLabel.TextStyle.Bold = true
 	missingPagesPercentageLabel.TextStyle.Italic = true
 	statusBarContainer := container.New(layout.NewHBoxLayout(), wayStatus, layout.NewSpacer(), swapStatus, layout.NewSpacer(), missingPagesNumLabel, layout.NewSpacer(), missingPagesPercentageLabel, layout.NewSpacer(), instructionStatus)
-	allContainer := container.New(layout.NewVBoxLayout(), buttonContainer, centerContainer, statusBarContainer)
+	allContainer := container.New(layout.NewVBoxLayout(), buttonContainer, layout.NewSpacer(), centerContainer, layout.NewSpacer(), statusBarContainer)
 	window.SetContent(allContainer)
 	window.ShowAndRun()
 }
