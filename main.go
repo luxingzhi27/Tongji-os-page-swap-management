@@ -32,14 +32,18 @@ var MemoryButtons [][]*widget.Button
 var LogicPageShowStr []binding.String
 var SwapStatusShowStr binding.String
 var MissingPagesNumStr binding.String
-var missingPagesNum int
+var MissingPagesNum int
 var InstructionSequence []int
-var Speed binding.Float
+var Speed float64
 var MemoryQueue *arrayqueue.Queue //FIFO
 var MemoryFrequency []int         //LRU
 var IsFull bool                   //LRU判断内存是否满
 var Memory int                    //LRU内存占用情况
 var LRUTime int                   //LRU时间戳
+var StartButton *widget.Button
+var WaySwitchButton *widget.Button
+var ResetButton *widget.Button
+var MissingPagesPercentageStr binding.String
 
 func dataInit() {
 	PageTable = make([][]int, PageNum)
@@ -49,7 +53,7 @@ func dataInit() {
 			PageTable[i][j] = i*PageSize + j
 		}
 	}
-	missingPagesNum = 0
+	MissingPagesNum = 0
 	MemoryQueue = arrayqueue.New()
 	MemoryFrequency = make([]int, MemorySize)
 	Memory = 0
@@ -66,13 +70,15 @@ func reSet() {
 			MemoryButtons[i][j].SetText("NULL")
 		}
 	}
-	MissingPagesNumStr.Set("missing pages num: 0")
-	missingPagesNum = 0
+	MissingPagesNumStr.Set("missing pages number: 0")
+	MissingPagesPercentageStr.Set("missing pages percentage: 0.00%")
+	MissingPagesNum = 0
 	SwapStatusShowStr.Set("swap status: ")
 	CurrentInstructionStr.Set("current instruction: NULL")
 	for i := 0; i < InstructionsListSize; i++ {
 		InstructionsList[i].Set("NULL")
 	}
+	StartButton.Enable()
 }
 
 func hilightButton(button *widget.Button) {
@@ -88,9 +94,8 @@ func disHighlightButton(button *widget.Button) {
 func getSequence() {
 	InstructionSequence = make([]int, InstructionsNum)
 	rand.Seed(time.Now().UnixNano())
-	var startIndex int
 	// 随机选择起始执行指令序号
-	startIndex = rand.Intn(InstructionsNum)
+	startIndex := rand.Intn(InstructionsNum)
 
 	currentIndex := startIndex
 
@@ -110,17 +115,17 @@ func getSequence() {
 			break
 		}
 		InstructionSequence[i+2] = currentIndex
-		currentIndex++
 		if currentIndex == InstructionsNum-1 {
 			currentIndex /= 2
 		}
+		currentIndex++
 		InstructionSequence[i+3] = currentIndex
 		currentIndex = rand.Intn(InstructionsNum-currentIndex-1) + currentIndex + 1
 		InstructionSequence[i+4] = currentIndex
-		currentIndex++
 		if currentIndex == InstructionsNum-1 {
 			currentIndex /= 2
 		}
+		currentIndex++
 		InstructionSequence[i+5] = currentIndex
 		currentIndex = rand.Intn(currentIndex - 1)
 	}
@@ -131,6 +136,9 @@ func getPageByInstruction(instruction int) int {
 }
 
 func startIterate() {
+	StartButton.Disable()
+	WaySwitchButton.Disable()
+	ResetButton.Disable()
 	for i := 0; i < InstructionsNum; i++ {
 		CurrentInstructionStr.Set("current instruction: " + strconv.Itoa(InstructionSequence[i]))
 		for j := 0; j < InstructionsListSize; j++ {
@@ -141,11 +149,7 @@ func startIterate() {
 				InstructionsList[j].Set(strconv.Itoa(InstructionSequence[index]))
 			}
 		}
-		speed, err := Speed.Get()
-		if err != nil {
-			panic(err)
-		}
-		timeInterval := float64(1500) / speed
+		timeInterval := float64(1500) / Speed
 		if PageManagementWay == 0 {
 			clearImportance()
 			FIFO(InstructionSequence[i])
@@ -155,6 +159,8 @@ func startIterate() {
 		}
 		time.Sleep(time.Duration(timeInterval) * time.Millisecond)
 	}
+	WaySwitchButton.Enable()
+	ResetButton.Enable()
 }
 
 func checkInMemory(instruction int) bool {
@@ -182,8 +188,9 @@ func LRU(instruction int) {
 		SwapStatusShowStr.Set("instruction " + strconv.Itoa(instruction) + " is in memory")
 		return
 	} else {
-		missingPagesNum++
-		MissingPagesNumStr.Set("missing pages num: " + strconv.Itoa(missingPagesNum))
+		MissingPagesNum++
+		MissingPagesNumStr.Set("missing pages number: " + strconv.Itoa(MissingPagesNum))
+		MissingPagesPercentageStr.Set("missing pages percentage: " + fmt.Sprintf("%.2f", float64(MissingPagesNum)/float64(InstructionsNum)*100) + "%")
 		if !IsFull {
 			Memory++
 			MemoryFrequency[Memory-1] = LRUTime
@@ -210,8 +217,9 @@ func FIFO(instruction int) {
 		SwapStatusShowStr.Set("instruction " + strconv.Itoa(instruction) + " is in memory")
 		return
 	} else {
-		missingPagesNum++
-		MissingPagesNumStr.Set("missing pages num: " + strconv.Itoa(missingPagesNum))
+		MissingPagesNum++
+		MissingPagesNumStr.Set("missing pages number: " + strconv.Itoa(MissingPagesNum))
+		MissingPagesPercentageStr.Set("missing pages percentage: " + fmt.Sprintf("%.2f", float64(MissingPagesNum)/float64(InstructionsNum)*100) + "%")
 		lenth := MemoryQueue.Size()
 		if lenth < MemorySize {
 			MemoryQueue.Enqueue(lenth + 1)
@@ -229,6 +237,9 @@ func replacePage(instruction, physicalPage int) {
 	logicPage := getPageByInstruction(instruction)
 	SwapStatusShowStr.Set(fmt.Sprintf("swap logical page %d and physical page %d", logicPage, physicalPage))
 	LogicPageShowStr[physicalPage-1].Set("logic page: " + strconv.Itoa(logicPage))
+	// if logicPage == 33 {
+	// 	fmt.Println("Instruction:", instruction)
+	// }
 	for i := 0; i < PageSize; i++ {
 		if PageTable[logicPage-1][i] == instruction {
 			hilightButton(MemoryButtons[physicalPage-1][i])
@@ -250,7 +261,7 @@ func UI() {
 			myApp.Settings().SetTheme(lightTheme)
 		}
 	})
-	waySwitchButton := widget.NewButton("Switch Page Management Way", func() {
+	WaySwitchButton = widget.NewButton("Switch Page Management Way", func() {
 		if PageManagementWay == 0 {
 			PageManagementWay = 1
 			PageManagementWayStr.Set("LRU")
@@ -259,15 +270,15 @@ func UI() {
 			PageManagementWayStr.Set("FIFO")
 		}
 	})
-	startButton := widget.NewButton("Start", func() {
+	StartButton = widget.NewButton("Start", func() {
 		go startIterate()
 	})
-	startButton.Importance = widget.HighImportance
-	resetButton := widget.NewButton("Reset", func() {
+	StartButton.Importance = widget.HighImportance
+	ResetButton = widget.NewButton("Reset", func() {
 		reSet()
 	})
-	resetButton.Importance = widget.HighImportance
-	buttonContainer := container.New(layout.NewHBoxLayout(), themeButton, layout.NewSpacer(), waySwitchButton, startButton, resetButton)
+	ResetButton.Importance = widget.HighImportance
+	buttonContainer := container.New(layout.NewHBoxLayout(), themeButton, layout.NewSpacer(), WaySwitchButton, StartButton, ResetButton)
 
 	memoryContainer := container.New(layout.NewHBoxLayout())
 	LogicPageShowStr = make([]binding.String, MemorySize)
@@ -308,11 +319,18 @@ func UI() {
 		instructionLabel.Alignment = fyne.TextAlignCenter
 		instructionsListContainer.Add(instructionLabel)
 	}
-	Speed = binding.NewFloat()
-	speedSlider := widget.NewSliderWithData(1, 15, Speed)
-	speedSlider.SetValue(8)
+	speedSlider := widget.NewSlider(1, 150)
+	speedSlider.SetValue(10)
+	Speed = 10
+	speedLabel := widget.NewLabel("speed: " + strconv.Itoa(int(speedSlider.Value)))
+	speedLabel.Alignment = fyne.TextAlignCenter
+	speedSlider.OnChanged = func(value float64) {
+		speedLabel.SetText("speed: " + strconv.Itoa(int(value)))
+		Speed = value
+	}
 	instructionsListContainer.Add(widget.NewLabel("execute speed"))
 	instructionsListContainer.Add(speedSlider)
+	instructionsListContainer.Add(speedLabel)
 	instructionsListContainer.Add(layout.NewSpacer())
 	centerContainer := container.New(layout.NewHBoxLayout(), memoryContainer, layout.NewSpacer(), instructionsListContainer)
 	PageManagementWayStr.Set("FIFO")
@@ -330,18 +348,22 @@ func UI() {
 	swapStatus.TextStyle.Bold = true
 	swapStatus.TextStyle.Italic = true
 	MissingPagesNumStr = binding.NewString()
-	MissingPagesNumStr.Set("missing pages num: 0")
+	MissingPagesNumStr.Set("missing pages number: 0")
 	missingPagesNumLabel := widget.NewLabelWithData(MissingPagesNumStr)
 	missingPagesNumLabel.TextStyle.Bold = true
 	missingPagesNumLabel.TextStyle.Italic = true
-	statusBarContainer := container.New(layout.NewHBoxLayout(), wayStatus, layout.NewSpacer(), swapStatus, layout.NewSpacer(), missingPagesNumLabel, layout.NewSpacer(), instructionStatus)
+	MissingPagesPercentageStr = binding.NewString()
+	MissingPagesPercentageStr.Set("missing pages percentage: 0.00%")
+	missingPagesPercentageLabel := widget.NewLabelWithData(MissingPagesPercentageStr)
+	missingPagesPercentageLabel.TextStyle.Bold = true
+	missingPagesPercentageLabel.TextStyle.Italic = true
+	statusBarContainer := container.New(layout.NewHBoxLayout(), wayStatus, layout.NewSpacer(), swapStatus, layout.NewSpacer(), missingPagesNumLabel, layout.NewSpacer(), missingPagesPercentageLabel, layout.NewSpacer(), instructionStatus)
 	allContainer := container.New(layout.NewVBoxLayout(), buttonContainer, centerContainer, statusBarContainer)
 	window.SetContent(allContainer)
 	window.ShowAndRun()
 }
 
 func main() {
-
 	dataInit()
 	UI()
 }
