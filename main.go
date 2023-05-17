@@ -78,6 +78,9 @@ func reSet() {
 	for i := 0; i < InstructionsListSize; i++ {
 		InstructionsList[i].Set("NULL")
 	}
+	for i := 0; i < MemorySize; i++ {
+		LogicPageShowStr[i].Set("logic page : NULL")
+	}
 	StartButton.Enable()
 }
 
