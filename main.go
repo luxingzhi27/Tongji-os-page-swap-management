@@ -327,8 +327,8 @@ func UI() {
 		instructionsListContainer.Add(instructionLabel)
 	}
 	speedSlider := widget.NewSlider(1, 150)
-	speedSlider.SetValue(10)
-	Speed = 10
+	speedSlider.SetValue(5)
+	Speed = 5
 	speedLabel := widget.NewLabel("speed: " + strconv.Itoa(int(speedSlider.Value)))
 	speedLabel.Alignment = fyne.TextAlignCenter
 	speedSlider.OnChanged = func(value float64) {
