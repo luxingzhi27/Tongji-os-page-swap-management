@@ -174,7 +174,6 @@ func checkInMemory(instruction int) bool {
 				//LRU
 				if PageManagementWay == 1 {
 					MemoryFrequency[i] = LRUTime
-					LRUTime++
 				}
 				return true
 			}
