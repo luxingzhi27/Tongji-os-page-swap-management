@@ -42,10 +42,22 @@
 
   ![](https://raw.githubusercontent.com/luxingzhi27/picture/main/FIFO.png)
 
+  使用一个`MemoryQueue`来存储使用物理内存的顺序，调入内存中时，入队被调入内存的位置，替换时选择替换出队列的位置，即可实现`FIFO`方法。
+
 - **LRU**：
 
   ![LRU](https://raw.githubusercontent.com/luxingzhi27/picture/main/LRU.png)
 
+  定义一个`LRUTime`用来记录程序执行的时间，`MemoryFrequence[4]`记录每个内存位置最近被使用的时间，每进行一次指令执行，便将`LRUTime++`，每当有内存块被使用时，便将对应的`MemoryFrequence[pos]`置为当前的`LRUTime`，每次要发生替换时，比较每个内存块对应`MemoryFrequence[pos]`的大小，最小的即为最近未被使用的位置，挑选其进行置换，即实现了`LRU`替换。
+
+- **checkInMemory**：
+
+  ![checkInMemory](https://raw.githubusercontent.com/luxingzhi27/picture/main/checkInMemory.png)
+
+  检查当前执行指令是否已经在内存中，若在，则高亮其位置，且若当前方法为`LRU`方法，则同时将对应`MemoryFrequence[i]`置为当前`LRUTime`。
+
 - **replacePage**：
 
-  
+  ![replacePage](https://raw.githubusercontent.com/luxingzhi27/picture/main/replacePage.png)
+
+  传入参数为当前执行指令与要替换的物理内存位置，首先计算得到当前指令所在的逻辑页号，再根据此逻辑页号取得该页中所有指令，并将其替换到物理内存中，同时高亮替换进来的指令。
