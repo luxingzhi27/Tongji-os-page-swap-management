@@ -10,3 +10,42 @@
 
 ## 2. 界面设计
 
+![image-20230518083227975](https://raw.githubusercontent.com/luxingzhi27/picture/main/image-20230518083227975.png)
+
+1. 切换主题按钮，可以切换白色与黑色主题，切换效果如下：
+
+   ![image-20230518083348914](https://raw.githubusercontent.com/luxingzhi27/picture/main/image-20230518083348914.png)
+
+2. 切换置换页算法方式：可选FIFO与LRU算法
+
+3. 开始按钮：点击后开始模拟过程
+
+4. 重置按钮：一次模拟完成后，进行重置回复到初始状态，可以进行下一次模拟
+
+5. 执行指令序列：展示当前即将执行的五个指令
+
+6. 速度调节：调节模拟过程的速度
+
+7. 当前指令：指示当前执行指令
+
+8. 缺页百分比：指示缺页的百分比比率
+
+9. 缺页数：指示缺页的数量
+
+10. 交换状态：指令模拟一条指令执行过程的置换页面的状态
+
+11. 展示区：展示物理内存块中指令存储情况
+
+## 3. 代码设计
+
+- **FIFO**：
+
+  ![](https://raw.githubusercontent.com/luxingzhi27/picture/main/FIFO.png)
+
+- **LRU**：
+
+  ![LRU](https://raw.githubusercontent.com/luxingzhi27/picture/main/LRU.png)
+
+- **replacePage**：
+
+  

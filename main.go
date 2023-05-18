@@ -171,6 +171,11 @@ func checkInMemory(instruction int) bool {
 		for j := 0; j < PageSize; j++ {
 			if MemoryButtons[i][j].Text == strconv.Itoa(instruction) {
 				hilightButton(MemoryButtons[i][j])
+				//LRU
+				if PageManagementWay == 1 {
+					MemoryFrequency[i] = LRUTime
+					LRUTime++
+				}
 				return true
 			}
 		}
