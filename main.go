@@ -273,6 +273,10 @@ func UI() {
 			PageManagementWayStr.Set("FIFO")
 		}
 	})
+	PageManagementWayStr.Set("FIFO")
+	wayStatus := widget.NewLabelWithData(PageManagementWayStr)
+	wayStatus.TextStyle.Bold = true
+	wayStatus.TextStyle.Italic = true
 	StartButton = widget.NewButton("Start", func() {
 		go startIterate()
 	})
@@ -281,7 +285,7 @@ func UI() {
 		reSet()
 	})
 	ResetButton.Importance = widget.HighImportance
-	buttonContainer := container.New(layout.NewHBoxLayout(), themeButton, layout.NewSpacer(), WaySwitchButton, StartButton, ResetButton)
+	buttonContainer := container.New(layout.NewHBoxLayout(), themeButton, layout.NewSpacer(), wayStatus, WaySwitchButton, StartButton, ResetButton)
 
 	memoryContainer := container.New(layout.NewHBoxLayout())
 	LogicPageShowStr = make([]binding.String, MemorySize)
@@ -336,10 +340,6 @@ func UI() {
 	instructionsListContainer.Add(speedLabel)
 	instructionsListContainer.Add(layout.NewSpacer())
 	centerContainer := container.New(layout.NewHBoxLayout(), memoryContainer, layout.NewSpacer(), instructionsListContainer)
-	PageManagementWayStr.Set("FIFO")
-	wayStatus := widget.NewLabelWithData(PageManagementWayStr)
-	wayStatus.TextStyle.Bold = true
-	wayStatus.TextStyle.Italic = true
 	CurrentInstructionStr = binding.NewString()
 	CurrentInstructionStr.Set("current instruction: null")
 	instructionStatus := widget.NewLabelWithData(CurrentInstructionStr)
@@ -360,7 +360,7 @@ func UI() {
 	missingPagesPercentageLabel := widget.NewLabelWithData(MissingPagesPercentageStr)
 	missingPagesPercentageLabel.TextStyle.Bold = true
 	missingPagesPercentageLabel.TextStyle.Italic = true
-	statusBarContainer := container.New(layout.NewHBoxLayout(), wayStatus, layout.NewSpacer(), swapStatus, layout.NewSpacer(), missingPagesNumLabel, layout.NewSpacer(), missingPagesPercentageLabel, layout.NewSpacer(), instructionStatus)
+	statusBarContainer := container.New(layout.NewHBoxLayout(), swapStatus, layout.NewSpacer(), missingPagesNumLabel, layout.NewSpacer(), missingPagesPercentageLabel, layout.NewSpacer(), instructionStatus)
 	allContainer := container.New(layout.NewVBoxLayout(), buttonContainer, layout.NewSpacer(), centerContainer, layout.NewSpacer(), statusBarContainer)
 	window.SetContent(allContainer)
 	window.ShowAndRun()
