@@ -73,7 +73,7 @@ func reSet() {
 	MissingPagesNumStr.Set("missing pages number: 0")
 	MissingPagesPercentageStr.Set("missing pages percentage: 0.00%")
 	MissingPagesNum = 0
-	SwapStatusShowStr.Set("swap status: ")
+	SwapStatusShowStr.Set("swap status: NULL")
 	CurrentInstructionStr.Set("current instruction: NULL")
 	for i := 0; i < InstructionsListSize; i++ {
 		InstructionsList[i].Set("NULL")
@@ -346,7 +346,7 @@ func UI() {
 	instructionStatus.TextStyle.Bold = true
 	instructionStatus.TextStyle.Italic = true
 	SwapStatusShowStr = binding.NewString()
-	SwapStatusShowStr.Set("swap status: loaded 4 pages")
+	SwapStatusShowStr.Set("swap status: NULL")
 	swapStatus := widget.NewLabelWithData(SwapStatusShowStr)
 	swapStatus.TextStyle.Bold = true
 	swapStatus.TextStyle.Italic = true
